@@ -1,0 +1,355 @@
+---
+name: Terraform Destroy
+on:
+  workflow_call:
+    secrets:
+      actions-id:
+        description: "The GitHub App ID for the Actions App"
+        required: false
+      actions-secret:
+        description: "The GitHub App secret for the Actions App"
+        required: false
+      encryption-key:
+        description: "Encryption key for plan artifacts. Required when enable-plan-encryption is true."
+        required: false
+
+    inputs:
+      confirmation:
+        description: Expects the name of the repository to be confirmed
+        required: true
+        type: string
+
+      additional-dir:
+        description: Uploads additional directory as an artifact from plan stage
+        required: false
+        type: string
+
+      additional-dir-optional:
+        default: false
+        description: Uploads additional directory as an artifact from plan stage
+        required: false
+        type: boolean
+
+      aws-account-id:
+        description: "The AWS account ID to deploy to"
+        required: true
+        type: string
+
+      aws-role:
+        default: "${{ github.event.repository.name }}"
+        description: "The AWS role to assume"
+        required: false
+        type: string
+
+      aws-read-role-name:
+        description: "Overrides the default behavior, and uses a custom role name for read-only access"
+        required: false
+        type: string
+
+      aws-write-role-name:
+        description: "Overrides the default behavior, and uses a custom role name for read-write access"
+        required: false
+        type: string
+
+      aws-region:
+        default: "eu-west-2"
+        description: "The AWS region to deploy to"
+        required: false
+        type: string
+
+      cicd-repository:
+        default: "appvia-lz-hmt/cicd-workflows"
+        description: "The repository to pull the CI/CD workflows from"
+        required: false
+        type: string
+
+      cicd-branch:
+        default: "main"
+        description: "The branch to pull the CI/CD workflows from"
+        required: false
+        type: string
+
+      environment:
+        default: "production"
+        description: "The environment to deploy to"
+        required: false
+        type: string
+
+      enable-plan-encryption:
+        default: true
+        description: "Whether to encrypt Terraform plan artifacts at rest"
+        required: false
+        type: boolean
+
+      enable-private-access:
+        description: Optional flag to state if terraform requires pulling private modules
+        required: false
+        default: false
+        type: boolean
+
+      organization-name:
+        default: "appvia"
+        description: "The name of the GitHub organization"
+        required: false
+        type: string
+
+      use-env-as-suffix:
+        default: false
+        description: "Whether to use the environment as a suffix for the state file and iam roles"
+        required: false
+        type: boolean
+
+      runs-on:
+        default: "ubuntu-latest"
+        description: "Single label value for the GitHub runner to use (custom value only applies to Terraform Plan and Apply steps)"
+        required: false
+        type: string
+
+      terraform-apply-extra-args:
+        default: ""
+        description: "Extra arguments to pass to terraform apply"
+        required: false
+        type: string
+
+      terraform-dir:
+        default: "."
+        description: "The directory to validate"
+        required: false
+        type: string
+
+      terraform-init-extra-args:
+        default: ""
+        description: "Extra arguments to pass to terraform init"
+        required: false
+        type: string
+
+      terraform-lock-timeout:
+        default: "30s"
+        description: The time to wait for a lock
+        required: false
+        type: string
+
+      terraform-log-level:
+        default: ""
+        description: "The log level of terraform"
+        required: false
+        type: string
+
+      terraform-plan-extra-args:
+        default: ""
+        description: "Extra arguments to pass to terraform plan"
+        required: false
+        type: string
+
+      terraform-state-key:
+        default: ""
+        description: "The key of the terraform state (default: <repo-name>.tfstate)"
+        required: false
+        type: string
+
+      terraform-values-file:
+        default: ""
+        description: "The values file to use (default: <environment>.tfvars)"
+        required: false
+        type: string
+
+      terraform-version:
+        default: "1.14.5"
+        description: "The version of terraform to use"
+        required: false
+        type: string
+
+      working-directory:
+        default: "."
+        description: "The working directory to run terraform commands in"
+        required: false
+        type: string
+
+env:
+  AWS_ROLE: ${{ inputs.aws-role }}
+  AWS_WEB_IDENTITY_TOKEN_FILE: /tmp/web_identity_token_file
+  TF_LOG: ${{ inputs.terraform-log-level }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-plan:
+    if: inputs.confirmation == github.repository
+    name: "Terraform Plan"
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    outputs:
+      result-auth: ${{ steps.bootstrap.outputs.outcome-auth }}
+      result-init: ${{ steps.bootstrap.outputs.outcome-init }}
+      result-validate: ${{ steps.validate.outcome }}
+      result-s3-backend-check: ${{ steps.s3-backend-check.outcome }}
+      result-plan: ${{ steps.plan.outcome }}
+      plan-stdout: ${{ steps.plan.outputs.stdout }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Terraform Bootstrap
+        id: bootstrap
+        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap@main # main
+        with:
+          actions-id: ${{ secrets.actions-id }}
+          actions-secret: ${{ secrets.actions-secret }}
+          aws-account-id: ${{ inputs.aws-account-id }}
+          aws-read-role-name: ${{ inputs.aws-read-role-name }}
+          aws-region: ${{ inputs.aws-region }}
+          aws-role: ${{ inputs.aws-role }}
+          aws-web-identity-token-file: ${{ env.AWS_WEB_IDENTITY_TOKEN_FILE }}
+          aws-write-role-name: ${{ inputs.aws-write-role-name }}
+          enable-private-access: ${{ inputs.enable-private-access }}
+          environment: ${{ inputs.environment }}
+          organization-name: ${{ inputs.organization-name }}
+          terraform-dir: ${{ inputs.terraform-dir }}
+          terraform-init-extra-args: ${{ inputs.terraform-init-extra-args }}
+          terraform-state-key: ${{ inputs.terraform-state-key }}
+          terraform-version: ${{ inputs.terraform-version }}
+          use-env-as-suffix: ${{ inputs.use-env-as-suffix }}
+          working-directory: ${{ inputs.working-directory }}
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=${{ inputs.terraform-dir }} validate -no-color
+      - name: Terraform S3 Backend Check
+        id: s3-backend-check
+        run: |
+          if grep -E '^[^#]*backend\s+"s3"' terraform.tf; then
+            echo "Terraform configuration references an S3 backend."
+          else
+            echo "Terraform configuration does not reference an S3 backend."
+            exit 1
+          fi
+      - name: Set terraform-values-file variable
+        run: |
+          if [ -n "${{ inputs.terraform-values-file }}" ]; then
+            echo "TF_VAR_FILE=${{ inputs.terraform-values-file }}" >> "${GITHUB_ENV}"
+          else
+            echo "TF_VAR_FILE=values/${{ inputs.environment }}.tfvars" >> "${GITHUB_ENV}"
+          fi
+      - name: Terraform Destroy Plan
+        id: plan
+        run: |
+          set -o pipefail
+          terraform -chdir=${{ inputs.terraform-dir }} plan \
+          -destroy -var-file="${TF_VAR_FILE}" \
+          -no-color \
+          -input=false \
+          -out=tfplan \
+          -lock-timeout=${{ inputs.terraform-lock-timeout }} \
+          ${{ inputs.terraform-plan-extra-args }} \
+          2>&1 | tee tfplan.stdout
+      - name: Terraform Plan JSON Output
+        run: |
+          terraform -chdir=${{ inputs.terraform-dir }} show -json tfplan > tfplan.json
+      - name: Calculate Plan Checksum
+        run: sha256sum tfplan > tfplan.checksum
+      - name: Encrypt Plan Artifacts
+        if: inputs.enable-plan-encryption
+        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-plan-encrypt@main
+        with:
+          encryption-key: ${{ secrets.encryption-key }}
+          working-directory: ${{ inputs.working-directory }}
+      - name: Upload tfplan
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: "${{ inputs.working-directory }}/tfplan*"
+          retention-days: 14
+      - name: Optional Additional Directory Upload
+        if: inputs.additional-dir-optional && inputs.additional-dir != ''
+        run: |
+          mkdir -p ${{ inputs.additional-dir }}
+          touch ${{ inputs.additional-dir }}/.optional.file
+      - name: Upload additional directory
+        if: inputs.additional-dir
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: additional-dir-${{ inputs.environment }}
+          path: ${{ inputs.additional-dir }}
+          retention-days: 14
+          if-no-files-found: error
+
+  terraform-apply:
+    if: inputs.confirmation == github.repository
+    name: "Terraform Destroy Apply"
+    environment: ${{ inputs.environment }}
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    needs:
+      - terraform-plan
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Terraform Bootstrap
+        id: bootstrap
+        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap@main # main
+        with:
+          actions-id: ${{ secrets.actions-id }}
+          actions-secret: ${{ secrets.actions-secret }}
+          aws-account-id: ${{ inputs.aws-account-id }}
+          aws-read-role-name: ${{ inputs.aws-read-role-name }}
+          aws-region: ${{ inputs.aws-region }}
+          aws-role: ${{ inputs.aws-role }}
+          aws-web-identity-token-file: ${{ env.AWS_WEB_IDENTITY_TOKEN_FILE }}
+          aws-write-role-name: ${{ inputs.aws-write-role-name }}
+          enable-private-access: ${{ inputs.enable-private-access }}
+          environment: ${{ inputs.environment }}
+          organization-name: ${{ inputs.organization-name }}
+          terraform-dir: ${{ inputs.terraform-dir }}
+          terraform-init-extra-args: ${{ inputs.terraform-init-extra-args }}
+          terraform-state-key: ${{ inputs.terraform-state-key }}
+          terraform-version: ${{ inputs.terraform-version }}
+          use-env-as-suffix: ${{ inputs.use-env-as-suffix }}
+          working-directory: ${{ inputs.working-directory }}
+      - name: Download tfplan
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: ${{ inputs.working-directory }}
+        continue-on-error: true
+      - name: Decrypt Plan Artifacts
+        if: inputs.enable-plan-encryption
+        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-plan-decrypt@main
+        with:
+          encryption-key: ${{ secrets.encryption-key }}
+          working-directory: ${{ inputs.working-directory }}
+      - name: Check Artifact Availability
+        run: |
+          if [ ! -f tfplan ]; then
+            echo "tfplan artifact not found. Please regenerate the plan."
+            exit 1
+          fi
+      - name: Download Additional Directories
+        if: inputs.additional-dir
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: additional-dir-${{ inputs.environment }}
+          path: ${{ inputs.additional-dir }}
+      - name: Validate Plan Checksum
+        run: |
+          if [ ! -f tfplan.checksum ]; then
+            echo "Checksum file is missing. The tfplan artifact may not have been generated or uploaded correctly. Halting Terraform Apply phase."
+            exit 1
+          fi
+          echo "Validating the checksum of the tfplan artifact..."
+          if sha256sum -c tfplan.checksum; then
+            echo "Checksum validation succeeded. The tfplan artifact is intact and matches the original plan."
+          else
+            echo "Checksum validation failed. The tfplan artifact has been modified or tampered with since the plan was generated."
+            echo "Halting Terraform Apply phase to ensure the integrity of the deployment process."
+            exit 1
+          fi
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve -input=false \
+          -lock-timeout=${{ inputs.terraform-lock-timeout }} \
+          ${{ inputs.terraform-apply-extra-args }} \
+          tfplan

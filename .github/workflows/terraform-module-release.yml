@@ -1,0 +1,52 @@
+---
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      enable-cliff:
+        description: "Indicates if the repository uses cliff for changelog generation"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    name: Github Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+      - name: Previous Release
+        id: previous_release
+        run: |
+          LAST_TAG=$(git tag --sort=-version:refname | head -n 2 | tail -n 1)
+          echo "LAST_TAG=${LAST_TAG}" >> "${GITHUB_OUTPUT}"
+      - name: Generate Cliff Changelog
+        if: inputs.enable-cliff == true
+        uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5 # v4
+        with:
+          args: "--verbose ${{ steps.previous_release.outputs.LAST_TAG }}..HEAD"
+          config: .cliff/cliff.toml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+      - name: Create GitHub Release
+        if: inputs.enable-cliff == true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --latest \
+            --notes-file CHANGELOG.md \
+            --title "Release ${{ github.ref_name }}"
+      - name: Create GitHub Release
+        if: inputs.enable-cliff == false
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
+        with:
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}

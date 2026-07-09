@@ -1,0 +1,70 @@
+---
+name: "Terragrunt Bootstrap Unauth"
+description: "Uses the bootstrap the Terragrunt environment"
+inputs:
+  actions-id:
+    description: "The application ID for the workflow token"
+    required: false
+  actions-secret:
+    description: "The application secret for the workflow token"
+    required: false
+  enable-private-access:
+    description: Optional flag to state if terragrunt requires pulling private modules
+    required: false
+  node-version:
+    description: "The version of node to use"
+    required: false
+    default: "22"
+  organization-name:
+    description: "The name of the Github organization"
+    required: false
+  terragrunt-dir:
+    description: "The directory to validate"
+    required: true
+  terraform-version:
+    description: "The version of terraform or opentofu to use"
+    required: true
+  terragrunt-version:
+    description: "The version of terragrunt to use"
+    required: true
+  working-directory:
+    description: "The working directory to run the action in"
+    required: true
+
+outputs:
+  outcome-auth:
+    description: "Outcome of the auth step"
+    value: ${{ steps.auth.outcome }}
+  outcome-init:
+    description: "Outcome of the init step"
+    value: ${{ steps.init.outcome }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup node
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+    - name: Setup Terragrunt
+      uses: gruntwork-io/terragrunt-action@4ed5b7344c80315e5357f28f36159fc980bc2d5a # v3
+      with:
+        tg_version: ${{ inputs.terragrunt-version }}
+        tf_path: /bin/terraform
+    - name: Enable Private Modules
+      id: get_workflow_token
+      if: ${{ inputs.enable-private-access == 'true' }}
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+      with:
+        client-id: ${{ inputs.actions-id }}
+        private-key: ${{ inputs.actions-secret }}
+        owner: ${{ inputs.organization-name }}
+    - name: Setup Credentials
+      if: ${{ inputs.enable-private-access == 'true' }}
+      shell: bash
+      run: |
+        git config --global url."https://x-access-token:${{steps.get_workflow_token.outputs.token}}@github.com/".insteadOf "https://github.com/"
