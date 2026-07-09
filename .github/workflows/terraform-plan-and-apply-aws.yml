@@ -103,7 +103,7 @@ on:
         description: "The name of the Github organization"
         required: false
         type: string
-        default: "appvia"
+        default: "appvia-lz-hmt"
       environment:
         default: "production"
         description: "The environment to deploy to"
