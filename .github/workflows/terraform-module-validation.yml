@@ -63,7 +63,7 @@ on:
         type: number
 
       organization-name:
-        default: "appvia"
+        default: "appvia-lz-hmt"
         description: "The name of the GitHub organization"
         required: false
         type: string

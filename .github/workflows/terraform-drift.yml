@@ -58,7 +58,7 @@ on:
         description: "The name of the Github organization"
         required: false
         type: string
-        default: "appvia"
+        default: "appvia-lz-hmt"
 
       use-env-as-suffix:
         default: false

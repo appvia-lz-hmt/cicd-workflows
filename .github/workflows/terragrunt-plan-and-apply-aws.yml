@@ -114,7 +114,7 @@ on:
         description: "The name of the Github organization (private modules access)"
         required: false
         type: string
-        default: "appvia"
+        default: "appvia-lz-hmt"
 
       runs-on:
         default: "ubuntu-latest"

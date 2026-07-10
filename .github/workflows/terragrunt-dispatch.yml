@@ -41,8 +41,8 @@ jobs:
     uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terragrunt-plan-and-apply-aws.yml@main # main
     name: "Terragrunt (Plan: ${{ inputs.enable_plan }}, Apply: ${{ inputs.enable_apply }})"
     secrets:
-      actions-id: "${{ secrets.ORG_ACTIONS_APP_ID }}"
-      actions-secret: "${{ secrets.ORG_ACTIONS_APP_SECRET }}"
+      actions-id: "${{ secrets.ACTION_ID }}"
+      actions-secret: "${{ secrets.ACTION_SECRET }}"
       github-token: ${{ secrets.REPO_GITHUB_TOKEN }}
       infracost-api-key: ${{ secrets.ORG_INFRACOST_API_KEY }}
     with:
