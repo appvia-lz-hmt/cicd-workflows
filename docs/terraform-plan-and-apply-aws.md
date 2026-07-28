@@ -15,7 +15,27 @@ This GitHub Actions workflow template ([terraform-plan-and-apply-aws.yml](../.gi
 8. **Terraform Plan:** A Terraform plan is generated with a specified values file (overridable via inputs) using the terraform plan command.
 9. **Get Cost Estimate:** The infracost utility is run to get a cost estimate on the Terraform Plan output. A comment will be added to the pull request with the cost estimate.
 10. **Add PR Comment:** If the workflow is triggered via a Pull Request, a comment will be added to the ticket containing the results of the previous steps.
-11. **Apply Changes:** If the workflow is triggered by a push to the main branch, it automatically applies the changes using the terraform apply command. This step should be used with caution as AWS infrastructure is modified at this point.
+11. **Apply Changes:** If the workflow is triggered by a push to the main branch or by a tag push, it applies the changes using the terraform apply command. This step should be used with caution as AWS infrastructure is modified at this point.
+
+## Tag-triggered deployments
+
+Plan and apply run for pushes to `main` and for tag refs. Tag support exists so a repository can
+gate a promotion behind a manual approval: the apply job declares
+`environment: <inputs.environment>`, so adding required reviewers to that GitHub Environment
+turns the run into plan → approve → apply, with the approved plan applied verbatim after a
+checksum check.
+
+Two things to be aware of when adding a tag trigger to a calling repository:
+
+- **Do not put a `paths` or `paths-ignore` filter on the tag trigger.** A tag push carries no
+  changed files, so a path filter matches nothing and the workflow silently never runs. Give the
+  tag trigger its own workflow file if the branch triggers need path filtering.
+- **The IAM role must trust the tag.** `terraform-bootstrap` selects the read-write role for tag
+  refs. The plan job has no `environment:`, so its OIDC subject is `repo:<org>/<repo>:ref:refs/tags/<tag>`,
+  while the apply job's is `repo:<org>/<repo>:environment:<environment>`. Both must be permitted by
+  the role's trust policy.
+- **Check the environment's deployment branch policy.** If the GitHub Environment is restricted to
+  protected branches only, a tag deployment is rejected at the gate.
 
 ## Usage
 
