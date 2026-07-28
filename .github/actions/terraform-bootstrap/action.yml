@@ -94,7 +94,11 @@ runs:
         if [ "${{ inputs.use-env-as-suffix }}" == "true" ]; then
           role_suffix="-${{ inputs.environment }}"
         fi
-        if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+        ## The read-write role is used for the default branch and for tag refs (tag pushes
+        ## are how a promotion to a protected environment is triggered); everything else
+        ## gets the read-only role. Note this compares the full ref, so a branch such as
+        ## 'feature/main' no longer resolves to the read-write role.
+        if [[ "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_REF}" == refs/tags/* ]]; then
           echo "name=${aws_write_role_name:-${{ inputs.aws-role }}${role_suffix}}" >> "${GITHUB_OUTPUT}"
         else
           echo "name=${aws_read_role_name:-${{ inputs.aws-role }}${role_suffix}-ro}" >> "${GITHUB_OUTPUT}"
