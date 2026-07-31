@@ -19,7 +19,7 @@ on:
 
 jobs:
   terraform:
-    uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terraform-plan-and-apply-aws.yml@main
+    uses: hmt-aws-platform/cicd-workflows/.github/workflows/terraform-plan-and-apply-aws.yml@main
     name: Plan and Apply
     with:
       aws-account: 123456789012
@@ -35,7 +35,7 @@ on:
 
 jobs:
   terraform-destroy:
-    uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terraform-destroy.yml@main
+    uses: hmt-aws-platform/cicd-workflows/.github/workflows/terraform-destroy.yml@main
     name: Destroy
     with:
       aws-account: 123456789012

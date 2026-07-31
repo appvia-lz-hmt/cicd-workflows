@@ -31,7 +31,7 @@ permissions:
 
 jobs:
   terraform-drift:
-    uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terraform-drift.yml@main
+    uses: hmt-aws-platform/cicd-workflows/.github/workflows/terraform-drift.yml@main
     name: Drift Detection
     secrets:
       slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}

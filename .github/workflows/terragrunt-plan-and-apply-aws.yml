@@ -51,7 +51,7 @@ on:
         default: "/tmp/web_identity_token_file"
 
       cicd-repository:
-        default: "appvia-lz-hmt/cicd-workflows"
+        default: "hmt-aws-platform/cicd-workflows"
         description: "The repository to pull the CI/CD workflows from"
         required: false
         type: string
@@ -114,7 +114,7 @@ on:
         description: "The name of the Github organization (private modules access)"
         required: false
         type: string
-        default: "appvia-lz-hmt"
+        default: "hmt-aws-platform"
 
       runs-on:
         default: "ubuntu-latest"
@@ -319,7 +319,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terragrunt Bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -357,7 +357,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terragrunt Bootstrap (Unauth)
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-bootstrap-unauth@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-bootstrap-unauth@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -417,7 +417,7 @@ jobs:
           fi
       - name: Terragrunt Bootstrap (Unauth)
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-bootstrap-unauth@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-bootstrap-unauth@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -448,7 +448,7 @@ jobs:
 
       - name: Terragrunt Inputs Diff
         id: diff
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-diff@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-diff@main # main
         with:
           cicd-branch: ${{ inputs.cicd-branch }}
           cicd-repository: ${{ inputs.cicd-repository }}
@@ -473,7 +473,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terragrunt Plan Matrix
         id: matrix
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-matrix@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-matrix@main # main
         with:
           account-files: "${{ inputs.terragrunt-config-file }}"
           exclude-patterns: ".terragrunt-cache,node_modules,.git"
@@ -515,7 +515,7 @@ jobs:
           echo "directory_name=$(dirname ${{ matrix.unit.relative_path }})" >> "${GITHUB_OUTPUT}"
       - name: Terragrunt Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -579,7 +579,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terragrunt Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -675,7 +675,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terraform Bootstrap
         id: init
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -733,7 +733,7 @@ jobs:
           echo "directory_name=$(dirname ${{ matrix.unit.relative_path }})" >> "${GITHUB_OUTPUT}"
       - name: Terragrunt Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -788,7 +788,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Add PR Comment
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-pr@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-pr@main # main
         with:
           environment: ${{ inputs.environment }}
           status-auth: ${{ needs.terragrunt-plan-matrix.outputs.result-auth }}
@@ -822,7 +822,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Add PR Comment
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terragrunt-pr@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terragrunt-pr@main # main
         with:
           environment: ${{ inputs.environment }}
           status-auth: ${{ needs.terragrunt-plan.outputs.result-auth }}

@@ -55,7 +55,7 @@ on:
         required: false
         type: string
       cicd-repository:
-        default: "appvia-lz-hmt/cicd-workflows"
+        default: "hmt-aws-platform/cicd-workflows"
         description: "The repository to pull the CI/CD workflows from"
         required: false
         type: string
@@ -103,7 +103,7 @@ on:
         description: "The name of the Github organization"
         required: false
         type: string
-        default: "appvia-lz-hmt"
+        default: "hmt-aws-platform"
       environment:
         default: "production"
         description: "The environment to deploy to"
@@ -269,7 +269,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terraform Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap-noauth@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-bootstrap-noauth@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -327,7 +327,7 @@ jobs:
           path: ${{ inputs.working-directory }}
       - name: Decrypt Plan Artifacts
         if: inputs.enable-plan-encryption
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-plan-decrypt@main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-plan-decrypt@main
         with:
           encryption-key: ${{ secrets.encryption-key }}
           working-directory: ${{ inputs.working-directory }}
@@ -368,7 +368,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terraform Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -451,7 +451,7 @@ jobs:
         run: sha256sum tfplan > tfplan.checksum
       - name: Encrypt Plan Artifacts
         if: inputs.enable-plan-encryption
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-plan-encrypt@main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-plan-encrypt@main
         with:
           encryption-key: ${{ secrets.encryption-key }}
           working-directory: ${{ inputs.working-directory }}
@@ -492,7 +492,7 @@ jobs:
           [ -f ".checkov.yml" ] || echo "{}" > .checkov.yml
       - name: Terraform Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap-noauth@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-bootstrap-noauth@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -537,7 +537,7 @@ jobs:
           fi
       - name: Terraform Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap-noauth@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-bootstrap-noauth@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -696,7 +696,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terraform Bootstrap
         id: init
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}
@@ -723,7 +723,7 @@ jobs:
         continue-on-error: true
       - name: Decrypt Plan Artifacts
         if: inputs.enable-plan-encryption
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-plan-decrypt@main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-plan-decrypt@main
         with:
           encryption-key: ${{ secrets.encryption-key }}
           working-directory: ${{ inputs.working-directory }}

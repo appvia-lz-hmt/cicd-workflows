@@ -40,7 +40,7 @@ on:
 
 jobs:
   terraform:
-    uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terraform-module-validation.yml@main
+    uses: hmt-aws-platform/cicd-workflows/.github/workflows/terraform-module-validation.yml@main
     name: Module Validation
     secrets:
       # Required if you want to run infracost

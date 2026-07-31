@@ -58,7 +58,7 @@ on:
         description: "The name of the Github organization"
         required: false
         type: string
-        default: "appvia-lz-hmt"
+        default: "hmt-aws-platform"
 
       use-env-as-suffix:
         default: false
@@ -139,7 +139,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Terraform Bootstrap
         id: bootstrap
-        uses: appvia-lz-hmt/cicd-workflows/.github/actions/terraform-bootstrap@main # main
+        uses: hmt-aws-platform/cicd-workflows/.github/actions/terraform-bootstrap@main # main
         with:
           actions-id: ${{ secrets.actions-id }}
           actions-secret: ${{ secrets.actions-secret }}

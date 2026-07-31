@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       cicd-repository:
-        default: "appvia-lz-hmt/cicd-workflows"
+        default: "hmt-aws-platform/cicd-workflows"
         description: "The repository to pull the CI/CD workflows from"
         required: false
         type: string

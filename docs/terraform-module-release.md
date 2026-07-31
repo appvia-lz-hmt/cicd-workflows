@@ -16,7 +16,7 @@ on:
 
 jobs:
   release:
-    uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terraform-module-release.yml@main
+    uses: hmt-aws-platform/cicd-workflows/.github/workflows/terraform-module-release.yml@main
     name: GitHub Release
 ```
 

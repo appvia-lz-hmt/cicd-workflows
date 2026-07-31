@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terraform-module-release.yml@main # main
+    uses: hmt-aws-platform/cicd-workflows/.github/workflows/terraform-module-release.yml@main # main
     name: GitHub Release
     with:
       enable-cliff: true

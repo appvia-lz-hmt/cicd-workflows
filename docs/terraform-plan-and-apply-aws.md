@@ -53,7 +53,7 @@ on:
 
 jobs:
   terraform:
-    uses: appvia-lz-hmt/cicd-workflows/.github/workflows/terraform-plan-and-apply-aws.yml@main
+    uses: hmt-aws-platform/cicd-workflows/.github/workflows/terraform-plan-and-apply-aws.yml@main
     name: Plan and Apply
     secrets:
       infracost-api-key: ${{ secrets.ORG_INFRACOST_API_KEY }}
